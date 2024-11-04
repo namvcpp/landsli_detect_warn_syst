@@ -18,13 +18,15 @@ while True:
     line = ser.readline().decode('utf-8').strip()
     data = line.split(',')
     sensor_data = {
-        'accelX': float(data[0]),
-        'accelY': float(data[1]),
-        'accelZ': float(data[2]),
-        'gyroX': float(data[3]),
-        'gyroY': float(data[4]),
-        'gyroZ': float(data[5]),
-        'temperature': float(data[6]),
+        'soilMoisture': float(data[0]),
+        'rain': float(data[1]),
+        'accelX': int(data[2]),
+        'accelY': int(data[3]),
+        'accelZ': int(data[4]),
+        'temperature': float(data[5]),
+        'gyroX': int(data[6]),
+        'gyroY': int(data[7]),
+        'gyroZ': int(data[8]),
         'timestamp': firestore.SERVER_TIMESTAMP
     }
     send_to_firebase(sensor_data)
