@@ -100,7 +100,7 @@ export default function Home() {
             </GoogleMap>
             <button 
               onClick={() => setShowGraph(!showGraph)}
-              className="absolute top-4 right-4 bg-white px-4 py-2 rounded-md shadow-md hover:bg-gray-100 transition-colors z-10"
+              className="absolute bottom-10 left-4 bg-white px-4 py-2 rounded-md shadow-md hover:bg-gray-100 transition-colors z-10"
             >
               {showGraph ? 'Hide Risk Graph' : 'Show Risk Graph'}
             </button>
