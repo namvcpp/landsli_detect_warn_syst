@@ -10,7 +10,11 @@
     ```bash
     git clone https://github.com/namvcpp/landsli_detect_warn_syst
     ```
-5. Install ```Nextjs```
+5. Navigate to ```landsli_detect_warn_syst```
+    ```bash
+    cd landsli_detect_warn_syst
+    ```
+6. Install ```Nextjs```
 
     ```bash
     npm install next
