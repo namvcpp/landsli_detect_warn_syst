@@ -19,3 +19,16 @@ body {
   background: var(--background);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+#popupBoxOnePosition {
+  width: 100%;
+  margin-top: 1rem;
+}
+
+.popupBoxWrapper {
+  background: transparent;
+}
+
+.popupBoxContent {
+  padding: 1rem;
+}
