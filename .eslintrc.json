@@ -1,3 +1,27 @@
 {
-  "extends": ["next/core-web-vitals", "next/typescript"]
+  "extends": ["next/core-web-vitals", "next/typescript"],
+  "rules": {
+    "no-console": "warn",
+    "no-unused-vars": "warn",
+    "no-undef": "warn",
+    "no-constant-condition": "warn",
+    "no-empty": "warn",
+    "no-irregular-whitespace": "warn",
+    "no-unreachable": "warn",
+    "no-unsafe-finally": "warn",
+    "no-unsafe-negation": "warn",
+    "no-unsafe-optional-chaining": "warn",
+    "no-unsafe-assignment": "warn",
+    "no-unsafe-argument": "warn",
+    "no-unsafe-call": "warn",
+    "no-unsafe-member-access": "warn",
+    "no-unsafe-return": "warn",
+    "no-unsafe-regex": "warn",
+    "no-unsafe-undefined": "warn",
+    "no-unsafe-index": "warn",
+    "no-unsafe-index-signature": "warn",
+    "no-unsafe-property": "warn",
+    "no-unsafe-identifier": "warn",
+    "no-unsafe-iteration": "warn"
+  }
 }
