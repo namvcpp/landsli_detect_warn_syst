@@ -6,7 +6,7 @@ import { GoogleMap, Marker, useJsApiLoader } from '@react-google-maps/api';
 import RiskGraph from '../components/monitor/RiskGraph';
 
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
+  apiKey: "AIzaSyBeNKymDI7abdj6Hj6YVHWqPU4QoIA8Kac",
   authDomain: "landslide-7cf2a.firebaseapp.com",
   databaseURL: "https://landslide-7cf2a-default-rtdb.firebaseio.com",
   projectId: "landslide-7cf2a",
