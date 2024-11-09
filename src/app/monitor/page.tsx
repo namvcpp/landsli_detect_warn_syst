@@ -1,14 +1,12 @@
 "use client";
 import { useEffect, useState } from 'react';
-import Image from 'next/image';
 import { initializeApp } from 'firebase/app';
-import { getFirestore, collection, getDocs } from 'firebase/firestore';
-import { GoogleMap, LoadScript, Marker } from '@react-google-maps/api';
-// import * as d3 from 'd3';
+import { getFirestore } from 'firebase/firestore';
+import { GoogleMap, Marker, useJsApiLoader } from '@react-google-maps/api';
 import RiskGraph from '../components/monitor/RiskGraph';
 
 const firebaseConfig = {
-  apiKey: "AIzaSyBeNKymDI7abdj6Hj6YVHWqPU4QoIA8Kac",
+  apiKey: "YOUR_API_KEY",
   authDomain: "landslide-7cf2a.firebaseapp.com",
   databaseURL: "https://landslide-7cf2a-default-rtdb.firebaseio.com",
   projectId: "landslide-7cf2a",
@@ -21,18 +19,27 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-export default function MonitoringDashboard() {
-  interface SensorData {
-    latitude: number;
-    longitude: number;
-    timestamp: string;
-    risk: number;
-    sensorId: number;
-  }
+interface SensorData {
+  latitude: number;
+  longitude: number;
+  timestamp: string;
+  risk: number;
+  sensorId: number;
+}
 
+export default function MonitoringDashboard() {
   const [mapMarkers, setMapMarkers] = useState<{ sensorId: number; latitude: number; longitude: number; }[]>([]);
   const [graphSensorData, setGraphSensorData] = useState<SensorData[]>([]);
   const [showGraph, setShowGraph] = useState(false);
+  const [isClient, setIsClient] = useState(false);
+
+  const { isLoaded } = useJsApiLoader({
+    googleMapsApiKey: "AIzaSyBbnHy_9HBHYDYssKdBjJyX2W96lYoB5m8"
+  });
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   useEffect(() => {
     const generateTestData = () => {
@@ -61,10 +68,10 @@ export default function MonitoringDashboard() {
         const location = sensorLocations.get(sensorId);
         for (let i = 0; i < 24; i++) {
           timeSeriesData.push({
-            timestamp: new Date(now.getTime() - (23-i) * 3600000).toISOString(),
+            timestamp: new Date(now.getTime() - (23 - i) * 3600000).toISOString(),
             latitude: location.latitude,
             longitude: location.longitude,
-            risk: 50 + Math.sin(i/3 + sensorId) * 20 + Math.random() * 20,
+            risk: 50 + Math.sin(i / 3 + sensorId) * 20 + Math.random() * 20,
             sensorId: sensorId
           });
         }
@@ -72,7 +79,6 @@ export default function MonitoringDashboard() {
 
       // Filter data for graph - only keep specified sensors
       const graphData = timeSeriesData.filter(d => graphSensors.includes(d.sensorId));
-      
       setMapMarkers(markers);
       setGraphSensorData(graphData);
     };
@@ -83,12 +89,12 @@ export default function MonitoringDashboard() {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
       <main className="flex flex-col gap-8 w-full h-full items-center sm:items-start relative">
-        <LoadScript googleMapsApiKey="AIzaSyBbnHy_9HBHYDYssKdBjJyX2W96lYoB5m8">
+        {isClient && isLoaded && (
           <div className="w-full relative">
             <GoogleMap
               mapContainerStyle={{ width: '100%', height: '600px' }}
               center={{ lat: 16.03958105087673, lng: 108.23595687329225 }}
-              zoom={10}
+              zoom={11}
             >
               {mapMarkers.map((marker) => (
                 <Marker
@@ -105,8 +111,7 @@ export default function MonitoringDashboard() {
               {showGraph ? 'Hide Risk Graph' : 'Show Risk Graph'}
             </button>
           </div>
-        </LoadScript>
-        
+        )}
         {showGraph && (
           <div className="w-full" id="popupBoxOnePosition">
             <div className="popupBoxWrapper w-full">
