@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from 'react';
 import { initializeApp } from 'firebase/app';
-import { getFirestore } from 'firebase/firestore';
+import { getFirestore, collection, getDocs } from 'firebase/firestore';
 import { GoogleMap, Marker, useJsApiLoader } from '@react-google-maps/api';
 import RiskGraph from '../components/monitor/RiskGraph';
 
@@ -42,48 +42,26 @@ export default function MonitoringDashboard() {
   }, []);
 
   useEffect(() => {
-    const generateTestData = () => {
-      const timeSeriesData = [];
-      const now = new Date();
-      const totalSensors = 4;
-      const graphSensors = [1, 2, 3, 4];
+    const fetchSensorData = async () => {
+      const querySnapshot = await getDocs(collection(db, "sensor_data"));
+      const sensorData: SensorData[] = [];
+      const markers: { sensorId: number; latitude: number; longitude: number; }[] = [];
 
-      // Generate fixed locations for all sensors
-      const sensorLocations = new Map();
-      const markers = [];
+      querySnapshot.forEach((doc) => {
+        const data = doc.data() as SensorData;
+        sensorData.push(data);
+        markers.push({
+          sensorId: data.sensorId,
+          latitude: data.latitude,
+          longitude: data.longitude,
+        });
+      });
 
-      // First create unique markers for the map
-      for (let sensorId = 1; sensorId <= totalSensors; sensorId++) {
-        const location = {
-          sensorId,
-          latitude: 16.03958105087673 + (Math.random() - 0.5) * 0.1,
-          longitude: 108.23595687329225 + (Math.random() - 0.5) * 0.1
-        };
-        markers.push(location);
-        sensorLocations.set(sensorId, location);
-      }
-
-      // Then generate time series data using fixed locations
-      for (let sensorId = 1; sensorId <= totalSensors; sensorId++) {
-        const location = sensorLocations.get(sensorId);
-        for (let i = 0; i < 24; i++) {
-          timeSeriesData.push({
-            timestamp: new Date(now.getTime() - (23 - i) * 3600000).toISOString(),
-            latitude: location.latitude,
-            longitude: location.longitude,
-            risk: 50 + Math.sin(i / 3 + sensorId) * 20 + Math.random() * 20,
-            sensorId: sensorId
-          });
-        }
-      }
-
-      // Filter data for graph - only keep specified sensors
-      const graphData = timeSeriesData.filter(d => graphSensors.includes(d.sensorId));
       setMapMarkers(markers);
-      setGraphSensorData(graphData);
+      setGraphSensorData(sensorData);
     };
 
-    generateTestData();
+    fetchSensorData();
   }, []);
 
   return (
@@ -94,7 +72,7 @@ export default function MonitoringDashboard() {
             <GoogleMap
               mapContainerStyle={{ width: '100%', height: '600px' }}
               center={{ lat: 16.03958105087673, lng: 108.23595687329225 }}
-              zoom={11}
+              zoom={10}
             >
               {mapMarkers.map((marker) => (
                 <Marker
