@@ -43,7 +43,7 @@ export default function MonitoringDashboard() {
   useEffect(() => {
     setIsClient(true);
 
-    const dataRef = ref(database, 'sensor_data/2024-11-19/');
+    const dataRef = ref(database, 'sensor_data/2024-11-23/');
     onValue(dataRef, (snapshot) => {
       const value = snapshot.val();
       if (value) {
