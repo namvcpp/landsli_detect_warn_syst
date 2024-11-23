@@ -23,6 +23,5 @@
     "no-unsafe-property": "warn",
     "no-unsafe-identifier": "warn",
     "no-unsafe-iteration": "warn"
-  },
-  "ignoreDuringBuilds": true
+  }
 }
