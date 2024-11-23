@@ -43,30 +43,25 @@ export default function MonitoringDashboard() {
   useEffect(() => {
     setIsClient(true);
 
-    const dataRef = ref(database, 'sensor_data/2024-11-23/');
-    onValue(dataRef, (snapshot) => {
-      const value = snapshot.val();
-      if (value) {
-        const fetchedData: SensorData[] = Object.keys(value).map(key => ({
-          sensorId: value[key].sensorId,
-          latitude: 16.039581, // Fixed latitude
-          longitude: 108.235957, // Fixed longitude
-          rain: value[key].rain,
-          soilMoisture: value[key].soilMoisture,
-          temperature: value[key].temperature,
-          risk: value[key].risk,
-          timestamp: value[key].timestamp,
-        }));
+    // Fake data generation
+    const fakeData: SensorData[] = Array.from({ length: 10 }, (_, i) => ({
+      sensorId: i + 1,
+      latitude: 16.039581 + Math.random() * 0.01,
+      longitude: 108.235957 + Math.random() * 0.01,
+      rain: Math.random() * 100,
+      soilMoisture: Math.random() * 100,
+      temperature: Math.random() * 35,
+      risk: Math.random() * 100,
+      timestamp: new Date(Date.now() - i * 60000).toISOString(),
+    }));
 
-        setMapMarkers(fetchedData.map(data => ({
-          sensorId: data.sensorId,
-          latitude: data.latitude,
-          longitude: data.longitude,
-          timestamp: data.timestamp,
-        })));
-        setGraphSensorData(fetchedData);
-      }
-    });
+    setMapMarkers(fakeData.map(data => ({
+      sensorId: data.sensorId,
+      latitude: data.latitude,
+      longitude: data.longitude,
+      timestamp: data.timestamp,
+    })));
+    setGraphSensorData(fakeData);
   }, []);
 
   return (
