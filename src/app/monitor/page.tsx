@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from 'react';
 import { initializeApp } from 'firebase/app';
-import { getFirestore, collection, getDocs } from 'firebase/firestore';
+import { getDatabase, ref, onValue } from 'firebase/database';
 import { GoogleMap, Marker, useJsApiLoader } from '@react-google-maps/api';
 import RiskGraph from '../components/monitor/RiskGraph';
 
@@ -17,18 +17,21 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+const database = getDatabase(app);
 
 interface SensorData {
   latitude: number;
   longitude: number;
-  timestamp: string;
+  rain: number;
+  soilMoisture: number;
+  temperature: number;
   risk: number;
+  timestamp: string;
   sensorId: number;
 }
 
 export default function MonitoringDashboard() {
-  const [mapMarkers, setMapMarkers] = useState<{ sensorId: number; latitude: number; longitude: number; }[]>([]);
+  const [mapMarkers, setMapMarkers] = useState<{ sensorId: number; latitude: number; longitude: number; timestamp: string; }[]>([]);
   const [graphSensorData, setGraphSensorData] = useState<SensorData[]>([]);
   const [showGraph, setShowGraph] = useState(false);
   const [isClient, setIsClient] = useState(false);
@@ -39,33 +42,35 @@ export default function MonitoringDashboard() {
 
   useEffect(() => {
     setIsClient(true);
-  }, []);
 
-  useEffect(() => {
-    const fetchSensorData = async () => {
-      const querySnapshot = await getDocs(collection(db, "sensor_data"));
-      const sensorData: SensorData[] = [];
-      const markers: { sensorId: number; latitude: number; longitude: number; }[] = [];
+    const dataRef = ref(database, 'sensor_data/2024-11-19/');
+    onValue(dataRef, (snapshot) => {
+      const value = snapshot.val();
+      if (value) {
+        const fetchedData: SensorData[] = Object.keys(value).map(key => ({
+          sensorId: value[key].sensorId,
+          latitude: 16.039581, // Fixed latitude
+          longitude: 108.235957, // Fixed longitude
+          rain: value[key].rain,
+          soilMoisture: value[key].soilMoisture,
+          temperature: value[key].temperature,
+          risk: value[key].risk,
+          timestamp: value[key].timestamp,
+        }));
 
-      querySnapshot.forEach((doc) => {
-        const data = doc.data() as SensorData;
-        sensorData.push(data);
-        markers.push({
+        setMapMarkers(fetchedData.map(data => ({
           sensorId: data.sensorId,
           latitude: data.latitude,
           longitude: data.longitude,
-        });
-      });
-
-      setMapMarkers(markers);
-      setGraphSensorData(sensorData);
-    };
-
-    fetchSensorData();
+          timestamp: data.timestamp,
+        })));
+        setGraphSensorData(fetchedData);
+      }
+    });
   }, []);
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
+    <div suppressHydrationWarning className="flex flex-col items-center justify-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
       <main className="flex flex-col gap-8 w-full h-full items-center sm:items-start relative">
         {isClient && isLoaded && (
           <div className="w-full relative">
@@ -74,9 +79,9 @@ export default function MonitoringDashboard() {
               center={{ lat: 16.03958105087673, lng: 108.23595687329225 }}
               zoom={10}
             >
-              {mapMarkers.map((marker) => (
+              {mapMarkers.map((marker, index) => (
                 <Marker
-                  key={marker.sensorId}
+                  key={`${marker.sensorId || index}-${marker.timestamp || index}`}
                   position={{ lat: marker.latitude, lng: marker.longitude }}
                   label={`Sensor ${marker.sensorId}`}
                 />
