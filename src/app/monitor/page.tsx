@@ -47,16 +47,39 @@ export default function MonitoringDashboard() {
     onValue(dataRef, (snapshot) => {
       const value = snapshot.val();
       if (value) {
+        // key is very important here, it is the sensorId
+        // this is the data structure of the database
+        // {
+        //   sensorId: {
+        //     rain: 0,
+        //     soilMoisture: 0,
+        //     temperature: 0,
+        //     risk: 0,
+        //     timestamp: '2024-11-23T00:00:00Z'
+        //   }
+        //
         const fetchedData: SensorData[] = Object.keys(value).map(key => ({
-          sensorId: value[key].sensorId,
+          // sensorId: value[key].sensorId,
+          // latitude: 16.039581, // Fixed latitude
+          // longitude: 108.235957, // Fixed longitude
+          // rain: value[key].rain,
+          // soilMoisture: value[key].soilMoisture,
+          // temperature: value[key].temperature,
+          // risk: value[key].risk,
+          // timestamp: value[key].timestamp,
+          sensorId: value.sensorId,
           latitude: 16.039581, // Fixed latitude
           longitude: 108.235957, // Fixed longitude
-          rain: value[key].rain,
-          soilMoisture: value[key].soilMoisture,
-          temperature: value[key].temperature,
-          risk: value[key].risk,
-          timestamp: value[key].timestamp,
+          rain: value.rain,
+          soilMoisture: value.soilMoisture,
+          temperature: value.temperature,
+          risk: value.risk,
+          timestamp: value.timestamp,
         }));
+
+        // const dataRef1 = ref(database, 'sensor_data/2024-11-23/rain');
+        // alert (dataRef1);
+        alert(JSON.stringify(fetchedData));
 
         setMapMarkers(fetchedData.map(data => ({
           sensorId: data.sensorId,
@@ -67,6 +90,10 @@ export default function MonitoringDashboard() {
         setGraphSensorData(fetchedData);
       }
     });
+    // Cleanup when component unmounts
+    return () => {
+      // Optionally clean up listeners if needed
+    };
   }, []);
 
   return (
