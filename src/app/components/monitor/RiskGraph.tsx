@@ -178,7 +178,7 @@ const RiskGraph: React.FC<RiskGraphProps> = ({ data }) => {
           .attr('stroke-width', 3);
         
         tooltip
-          .html(`Sensor ${sensorData.sensorId}<br/>Soil moisture: ${sensorData.soilMoisture}<br/>Rain: ${sensorData.rain}<br/>Temperature: ${sensorData.temperature}<br/>Time: ${d3.timeFormat('%H:%M')(new Date(sensorData.timestamp))}<br/>Risk: ${sensorData.risk.toFixed(1)}%`)
+          .html(`Soil moisture: ${sensorData.soilMoisture}<br/>Rain: ${sensorData.rain}<br/>Temperature: ${sensorData.temperature}<br/>Risk: ${sensorData.risk.toFixed(1)}%<br/>Time: ${d3.timeFormat('%H:%M')(new Date(sensorData.timestamp))}`)
           .style('left', `${event.pageX + 10}px`)
           .style('top', `${event.pageY - 10}px`)
           .style('opacity', 1);

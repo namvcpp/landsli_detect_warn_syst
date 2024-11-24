@@ -43,7 +43,7 @@ export default function MonitoringDashboard() {
   useEffect(() => {
     setIsClient(true);
 
-    const dataRef = ref(database, 'sensor_data/2024-11-23/');
+    const dataRef = ref(database, 'sensor_data/2024-11-23');
     onValue(dataRef, (snapshot) => {
       const value = snapshot.val();
       if (value) {
@@ -58,23 +58,23 @@ export default function MonitoringDashboard() {
         //     timestamp: '2024-11-23T00:00:00Z'
         //   }
         //
-        const fetchedData: SensorData[] = Object.keys(value).map(key => ({
-          // sensorId: value[key].sensorId,
-          // latitude: 16.039581, // Fixed latitude
-          // longitude: 108.235957, // Fixed longitude
-          // rain: value[key].rain,
-          // soilMoisture: value[key].soilMoisture,
-          // temperature: value[key].temperature,
-          // risk: value[key].risk,
-          // timestamp: value[key].timestamp,
-          sensorId: value.sensorId,
+        const fetchedData: SensorData[] = Object.keys(value).map(sensorKey => ({
+          sensorId: Number(sensorKey.split(' ')[1]), // Extract sensorId from key
           latitude: 16.039581, // Fixed latitude
           longitude: 108.235957, // Fixed longitude
-          rain: value.rain,
-          soilMoisture: value.soilMoisture,
-          temperature: value.temperature,
-          risk: value.risk,
-          timestamp: value.timestamp,
+          rain: value[sensorKey].rain,
+          soilMoisture: value[sensorKey].soilMoisture,
+          temperature: value[sensorKey].temperature,
+          risk: value[sensorKey].risk,
+          timestamp: value[sensorKey].timestamp,
+          // sensorId: value.sensorId,
+          // latitude: 16.039581, // Fixed latitude
+          // longitude: 108.235957, // Fixed longitude
+          // rain: value.rain,
+          // soilMoisture: value.soilMoisture,
+          // temperature: value.temperature,
+          // risk: value.risk,
+          // timestamp: value.timestamp,
         }));
 
         // const dataRef1 = ref(database, 'sensor_data/2024-11-23/rain');
@@ -108,7 +108,8 @@ export default function MonitoringDashboard() {
             >
               {mapMarkers.map((marker, index) => (
                 <Marker
-                  key={`${marker.sensorId || index}-${marker.timestamp || index}`}
+                  // Create a truly unique key using sensorId and timestamp
+                  key={marker.sensorId ? `sensor-${marker.sensorId}-${index}` : `fallback-${index}`}
                   position={{ lat: marker.latitude, lng: marker.longitude }}
                   label={`Sensor ${marker.sensorId}`}
                 />
