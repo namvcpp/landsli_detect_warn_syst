@@ -43,6 +43,65 @@ export default function MonitoringDashboard() {
   useEffect(() => {
     setIsClient(true);
 
+    const currentDate = new Date().toISOString().split('T')[0];
+    const dataRef = ref(database, `sensor_data/${currentDate}`);
+    // const dataRef = ref(database, 'sensor_data/2024-11-24);
+
+    onValue(dataRef, (snapshot) => {
+      const value = snapshot.val();
+      if (!value) return;
+
+      const fetchedData: SensorData[] = [];
+
+      // Iterate through timestamps
+      Object.keys(value).forEach(timestampKey => {
+        const sensorData = value[timestampKey];
+
+        // Iterate through sensors
+        Object.keys(sensorData).forEach(sensorKey => {
+          const sensor = sensorData[sensorKey];
+          
+          // Create a proper timestamp string
+          const formattedTimestamp = new Date(parseInt(timestampKey)).toISOString();
+          
+          fetchedData.push({
+            sensorId: Number(sensorKey.split(' ')[1]), // Extract number from "sensor X"
+            latitude: sensor.latitude,
+            longitude: sensor.longitude,
+            rain: sensor.rain,
+            soilMoisture: sensor.soilMoisture,
+            temperature: sensor.temperature,
+            risk: sensor.risk * 100,
+            timestamp: formattedTimestamp // Use the timestamp from the data structure
+          });
+        });
+      });
+
+      setMapMarkers(fetchedData.map(data => ({
+        sensorId: data.sensorId,
+        latitude: data.latitude,
+        longitude: data.longitude,
+        timestamp: data.timestamp,
+      })));
+      setGraphSensorData(fetchedData);
+    });
+
+    /* Uncomment this block to fetch data from Firebase Realtime Database
+    // with the following data structure:
+    // {
+    //   sensor_data: {
+    //     '2024-11-23': {
+    //       sensorId: {
+    //         rain: 0,
+    //         soilMoisture: 0,
+    //         temperature: 0,
+    //         risk: 0,
+    //         timestamp: '2024-11-23T00:00:00Z'
+    //       }
+    //     }
+    //   }
+    // }
+
     const dataRef = ref(database, 'sensor_data/2024-11-23');
     onValue(dataRef, (snapshot) => {
       const value = snapshot.val();
@@ -90,6 +149,8 @@ export default function MonitoringDashboard() {
         setGraphSensorData(fetchedData);
       }
     });
+    */
+
     // Cleanup when component unmounts
     return () => {
       // Optionally clean up listeners if needed

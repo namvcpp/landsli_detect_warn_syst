@@ -41,7 +41,7 @@ const RiskGraph: React.FC<RiskGraphProps> = ({ data }) => {
     const svg = d3.select(svgRef.current);
     svg.selectAll('*').remove();
 
-    const margin = { top: 20, right: 100, bottom: 30, left: 50 };
+    const margin = { top: 20, right: 100, bottom: 45, left: 65 };
     const width = dimensions.width - margin.left - margin.right;
     const height = dimensions.height - margin.top - margin.bottom;
 
@@ -81,7 +81,7 @@ const RiskGraph: React.FC<RiskGraphProps> = ({ data }) => {
     g.append('text')
       .attr('class', 'axis-label')
       .attr('x', -height/2)
-      .attr('y', -30)
+      .attr('y', -40)
       .attr('transform', 'rotate(-90)')
       .style('text-anchor', 'middle')
       .text('Risk Level (%)');
@@ -89,7 +89,7 @@ const RiskGraph: React.FC<RiskGraphProps> = ({ data }) => {
     g.append('text')
       .attr('class', 'axis-label')
       .attr('x', width/2)
-      .attr('y', height + 25)
+      .attr('y', height + 35)
       .style('text-anchor', 'middle')
       .text('Time');
 
