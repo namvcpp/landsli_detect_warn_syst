@@ -71,7 +71,7 @@ export default function MonitoringDashboard() {
             rain: sensor.rain,
             soilMoisture: sensor.soilMoisture,
             temperature: sensor.temperature,
-            risk: sensor.risk * 100,
+            risk: sensor.risk,
             timestamp: formattedTimestamp // Use the timestamp from the data structure
           });
         });
@@ -157,6 +157,16 @@ export default function MonitoringDashboard() {
     };
   }, []);
 
+  const uniqueMapMarkers = Array.from(
+    mapMarkers.reduce((map, marker) => {
+      const key = `${marker.latitude}-${marker.longitude}`;
+      if (!map.has(key)) {
+        map.set(key, marker);
+      }
+      return map;
+    }, new Map()).values()
+  );
+
   return (
     <div suppressHydrationWarning className="flex flex-col items-center justify-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
       <main className="flex flex-col gap-8 w-full h-full items-center sm:items-start relative">
@@ -164,17 +174,21 @@ export default function MonitoringDashboard() {
           <div className="w-full relative">
             <GoogleMap
               mapContainerStyle={{ width: '100%', height: '600px' }}
-              center={{ lat: 16.03958105087673, lng: 108.23595687329225 }}
+              center={{ lat: 16.168714, lng: 108.109519 }}
               zoom={10}
             >
-              {mapMarkers.map((marker, index) => (
-                <Marker
-                  // Create a truly unique key using sensorId and timestamp
-                  key={marker.sensorId ? `sensor-${marker.sensorId}-${index}` : `fallback-${index}`}
+                {uniqueMapMarkers.map((marker, index) => (
+                  <Marker
+                  key={`sensor-${marker.sensorId}-${index}`}
                   position={{ lat: marker.latitude, lng: marker.longitude }}
-                  label={`Sensor ${marker.sensorId}`}
-                />
-              ))}
+                  label={{
+                    text: `Sensor ${marker.sensorId}`,
+                    color: 'black',
+                    fontSize: '16px',
+                    fontWeight: 'lighter',
+                  }}
+                  />
+                ))}
             </GoogleMap>
             <button 
               onClick={() => setShowGraph(!showGraph)}
