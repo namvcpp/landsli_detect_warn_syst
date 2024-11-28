@@ -45,7 +45,7 @@ export default function MonitoringDashboard() {
 
     // const currentDate = new Date().toISOString().split('T')[0];
     // const dataRef = ref(database, `sensor_data/${currentDate}`);
-    const dataRef = ref(database, 'sensor_data/2024-11-24');
+    const dataRef = ref(database, 'sensor_data/2024-11-28');
 
     onValue(dataRef, (snapshot) => {
       const value = snapshot.val();
