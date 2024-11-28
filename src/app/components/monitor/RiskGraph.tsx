@@ -65,12 +65,19 @@ const RiskGraph: React.FC<RiskGraphProps> = ({ data }) => {
       .attr('class', 'graph')
       .attr('transform', `translate(${margin.left},${margin.top})`);
 
+    // Adjust the x-axis to ensure all ticks are shown, including the first and last
+    const xAxis = d3.axisBottom(x)
+      .ticks(6)
+      .tickFormat(d => d3.timeFormat('%H:%M')(d as Date));
+
     g.append('g')
       .attr('class', 'axis x-axis')
       .attr('transform', `translate(0,${height})`)
-      .call(d3.axisBottom(x)
-        .ticks(6)
-        .tickFormat(d => d3.timeFormat('%H:%M')(d as Date)));
+      .call(xAxis)
+      .selectAll('text')
+      .attr('dx', '-1em')
+      .attr('dy', '1em')
+      .style('text-anchor', 'end');
 
     g.append('g')
       .attr('class', 'axis y-axis')
@@ -80,7 +87,7 @@ const RiskGraph: React.FC<RiskGraphProps> = ({ data }) => {
 
     g.append('text')
       .attr('class', 'axis-label')
-      .attr('x', -height/2)
+      .attr('x', -height / 2)
       .attr('y', -40)
       .attr('transform', 'rotate(-90)')
       .style('text-anchor', 'middle')
@@ -88,7 +95,7 @@ const RiskGraph: React.FC<RiskGraphProps> = ({ data }) => {
 
     g.append('text')
       .attr('class', 'axis-label')
-      .attr('x', width/2)
+      .attr('x', width / 2)
       .attr('y', height + 35)
       .style('text-anchor', 'middle')
       .text('Time');

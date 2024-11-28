@@ -5,7 +5,7 @@ import { getDatabase, ref, onValue } from 'firebase/database';
 import { GoogleMap, Marker, useJsApiLoader } from '@react-google-maps/api';
 import RiskGraph from '../components/monitor/RiskGraph';
 
-const firebaseConfig = {
+const firebaseConfig = {                                                    
   apiKey: "AIzaSyBeNKymDI7abdj6Hj6YVHWqPU4QoIA8Kac",
   authDomain: "landslide-7cf2a.firebaseapp.com",
   databaseURL: "https://landslide-7cf2a-default-rtdb.firebaseio.com",
@@ -43,9 +43,9 @@ export default function MonitoringDashboard() {
   useEffect(() => {
     setIsClient(true);
 
-    const currentDate = new Date().toISOString().split('T')[0];
-    const dataRef = ref(database, `sensor_data/${currentDate}`);
-    // const dataRef = ref(database, 'sensor_data/2024-11-24);
+    // const currentDate = new Date().toISOString().split('T')[0];
+    // const dataRef = ref(database, `sensor_data/${currentDate}`);
+    const dataRef = ref(database, 'sensor_data/2024-11-24');
 
     onValue(dataRef, (snapshot) => {
       const value = snapshot.val();
@@ -62,7 +62,7 @@ export default function MonitoringDashboard() {
           const sensor = sensorData[sensorKey];
           
           // Create a proper timestamp string
-          const formattedTimestamp = new Date(parseInt(timestampKey)).toISOString();
+          const formattedTimestamp = new Date(parseInt(timestampKey) * 1000).toISOString();
           
           fetchedData.push({
             sensorId: Number(sensorKey.split(' ')[1]), // Extract number from "sensor X"
@@ -77,7 +77,18 @@ export default function MonitoringDashboard() {
         });
       });
 
-      setMapMarkers(fetchedData.map(data => ({
+      // Use a Set to eliminate repeated markers
+      const uniqueMarkers = Array.from(
+        fetchedData.reduce((map, marker) => {
+          const key = `${marker.latitude}-${marker.longitude}`;
+          if (!map.has(key)) {
+            map.set(key, marker);
+          }
+          return map;
+        }, new Map()).values()
+      );
+
+      setMapMarkers(uniqueMarkers.map(data => ({
         sensorId: data.sensorId,
         latitude: data.latitude,
         longitude: data.longitude,
@@ -86,86 +97,11 @@ export default function MonitoringDashboard() {
       setGraphSensorData(fetchedData);
     });
 
-    /* Uncomment this block to fetch data from Firebase Realtime Database
-    // with the following data structure:
-    // {
-    //   sensor_data: {
-    //     '2024-11-23': {
-    //       sensorId: {
-    //         rain: 0,
-    //         soilMoisture: 0,
-    //         temperature: 0,
-    //         risk: 0,
-    //         timestamp: '2024-11-23T00:00:00Z'
-    //       }
-    //     }
-    //   }
-    // }
-
-    const dataRef = ref(database, 'sensor_data/2024-11-23');
-    onValue(dataRef, (snapshot) => {
-      const value = snapshot.val();
-      if (value) {
-        // key is very important here, it is the sensorId
-        // this is the data structure of the database
-        // {
-        //   sensorId: {
-        //     rain: 0,
-        //     soilMoisture: 0,
-        //     temperature: 0,
-        //     risk: 0,
-        //     timestamp: '2024-11-23T00:00:00Z'
-        //   }
-        //
-        const fetchedData: SensorData[] = Object.keys(value).map(sensorKey => ({
-          sensorId: Number(sensorKey.split(' ')[1]), // Extract sensorId from key
-          latitude: 16.039581, // Fixed latitude
-          longitude: 108.235957, // Fixed longitude
-          rain: value[sensorKey].rain,
-          soilMoisture: value[sensorKey].soilMoisture,
-          temperature: value[sensorKey].temperature,
-          risk: value[sensorKey].risk,
-          timestamp: value[sensorKey].timestamp,
-          // sensorId: value.sensorId,
-          // latitude: 16.039581, // Fixed latitude
-          // longitude: 108.235957, // Fixed longitude
-          // rain: value.rain,
-          // soilMoisture: value.soilMoisture,
-          // temperature: value.temperature,
-          // risk: value.risk,
-          // timestamp: value.timestamp,
-        }));
-
-        // const dataRef1 = ref(database, 'sensor_data/2024-11-23/rain');
-        // alert (dataRef1);
-        alert(JSON.stringify(fetchedData));
-
-        setMapMarkers(fetchedData.map(data => ({
-          sensorId: data.sensorId,
-          latitude: data.latitude,
-          longitude: data.longitude,
-          timestamp: data.timestamp,
-        })));
-        setGraphSensorData(fetchedData);
-      }
-    });
-    */
-
     // Cleanup when component unmounts
     return () => {
       // Optionally clean up listeners if needed
     };
   }, []);
-
-  const uniqueMapMarkers = Array.from(
-    mapMarkers.reduce((map, marker) => {
-      const key = `${marker.latitude}-${marker.longitude}`;
-      if (!map.has(key)) {
-        map.set(key, marker);
-      }
-      return map;
-    }, new Map()).values()
-  );
 
   return (
     <div suppressHydrationWarning className="flex flex-col items-center justify-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
@@ -177,7 +113,7 @@ export default function MonitoringDashboard() {
               center={{ lat: 16.168714, lng: 108.109519 }}
               zoom={10}
             >
-                {uniqueMapMarkers.map((marker, index) => (
+                {mapMarkers.map((marker, index) => (
                   <Marker
                   key={`sensor-${marker.sensorId}-${index}`}
                   position={{ lat: marker.latitude, lng: marker.longitude }}
@@ -185,7 +121,7 @@ export default function MonitoringDashboard() {
                     text: `Sensor ${marker.sensorId}`,
                     color: 'black',
                     fontSize: '16px',
-                    fontWeight: 'lighter',
+                    fontWeight: 'bold',
                   }}
                   />
                 ))}
