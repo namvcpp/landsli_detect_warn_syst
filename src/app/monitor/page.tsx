@@ -35,17 +35,21 @@ export default function MonitoringDashboard() {
   const [graphSensorData, setGraphSensorData] = useState<SensorData[]>([]);
   const [showGraph, setShowGraph] = useState(false);
   const [isClient, setIsClient] = useState(false);
+  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
 
   const { isLoaded } = useJsApiLoader({
     googleMapsApiKey: "AIzaSyBbnHy_9HBHYDYssKdBjJyX2W96lYoB5m8"
   });
 
+  // Function to validate latitude and longitude
+  const isValidLatLng = (lat: number, lng: number) => {
+    return !isNaN(lat) && !isNaN(lng) && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180;
+  };
+
   useEffect(() => {
     setIsClient(true);
 
-    // const currentDate = new Date().toISOString().split('T')[0];
-    // const dataRef = ref(database, `sensor_data/${currentDate}`);
-    const dataRef = ref(database, 'sensor_data/2024-11-28');
+    const dataRef = ref(database, `sensor_data/${selectedDate}`);
 
     onValue(dataRef, (snapshot) => {
       const value = snapshot.val();
@@ -77,11 +81,11 @@ export default function MonitoringDashboard() {
         });
       });
 
-      // Use a Set to eliminate repeated markers
+      // Use a Set to eliminate repeated markers and filter out invalid markers
       const uniqueMarkers = Array.from(
         fetchedData.reduce((map, marker) => {
           const key = `${marker.latitude}-${marker.longitude}`;
-          if (!map.has(key)) {
+          if (!map.has(key) && isValidLatLng(marker.latitude, marker.longitude)) {
             map.set(key, marker);
           }
           return map;
@@ -101,11 +105,19 @@ export default function MonitoringDashboard() {
     return () => {
       // Optionally clean up listeners if needed
     };
-  }, []);
+  }, [selectedDate]);
 
   return (
     <div suppressHydrationWarning className="flex flex-col items-center justify-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
       <main className="flex flex-col gap-8 w-full h-full items-center sm:items-start relative">
+        <div className="w-full flex justify-center mb-4">
+          <input
+            type="date"
+            value={selectedDate}
+            onChange={(e) => setSelectedDate(e.target.value)}
+            className="border border-gray-300 rounded-md p-2"
+          />
+        </div>
         {isClient && isLoaded && (
           <div className="w-full relative">
             <GoogleMap
