@@ -61,19 +61,30 @@ const RiskGraph: React.FC<RiskGraphProps> = ({ data }) => {
       .y(d => y(d.risk))
       .curve(d3.curveMonotoneX);
 
+    const area = d3.area<SensorData>()
+      .x(d => x(new Date(d.timestamp)))
+      .y0(y(70))
+      .y1(y(100))
+      .curve(d3.curveMonotoneX);
+
     const g = svg.append('g')
       .attr('class', 'graph')
       .attr('transform', `translate(${margin.left},${margin.top})`);
 
-    // Adjust the x-axis to ensure all ticks are shown, including the first and last
-    const xAxis = d3.axisBottom(x)
-      .ticks(6)
-      .tickFormat(d => d3.timeFormat('%H:%M')(d as Date));
+    // Append the area for high-risk values
+    g.append('path')
+      .datum(data)
+      .attr('class', 'area')
+      .attr('fill', 'red')
+      .attr('opacity', 0.3)
+      .attr('d', area);
 
     g.append('g')
       .attr('class', 'axis x-axis')
       .attr('transform', `translate(0,${height})`)
-      .call(xAxis)
+      .call(d3.axisBottom(x)
+        .ticks(6)
+        .tickFormat(d => d3.timeFormat('%H:%M')(d as Date)))
       .selectAll('text')
       .attr('dx', '-1em')
       .attr('dy', '1em')
