@@ -23,6 +23,27 @@ export default function HomePage() {
           <Image src="/images/satlodat3.jpg" alt="Data Analytics" layout="fill" objectFit="cover" />
         </div>
       </div>
+      <section className="px-4 py-8 bg-secondary text-white rounded-lg shadow-lg">
+        <h2 className="text-3xl font-bold mb-4">Why Choose Us?</h2>
+        <p className="mb-4">
+          Our system provides real-time monitoring and early warning to help prevent landslides and protect communities.
+        </p>
+        <ul className="list-disc list-inside space-y-2">
+          <li>Advanced detection technology</li>
+          <li>Real-time data analytics</li>
+          <li>24/7 monitoring</li>
+          <li>Comprehensive risk assessment</li>
+        </ul>
+      </section>
+      <section className="px-4 py-8 bg-primary text-white rounded-lg shadow-lg">
+        <h2 className="text-3xl font-bold mb-4">Get Involved</h2>
+        <p className="mb-4">
+          Join our community and help us make a difference. Stay informed and take action to prevent landslides.
+        </p>
+        <button className="px-4 py-2 bg-accent text-white rounded-lg hover:bg-orange-600 transition-colors">
+          Learn More
+        </button>
+      </section>
     </div>
   );
 }

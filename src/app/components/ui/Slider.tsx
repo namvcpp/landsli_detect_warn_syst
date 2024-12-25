@@ -44,7 +44,7 @@ const Slider = () => {
             fill
             className="object-cover"
           />
-          <div className="absolute inset-0 bg-black/40 flex items-center justify-center text-white">
+          <div className="absolute inset-0 bg-black/50 flex items-center justify-center text-white">
             <div className="text-center">
               <h2 className="text-4xl font-bold mb-4">{slide.title}</h2>
               <p className="text-xl">{slide.description}</p>
@@ -57,7 +57,7 @@ const Slider = () => {
           <div
             key={index}
             className={`w-3 h-3 rounded-full transition-colors duration-300 ${
-              index === current ? 'bg-primary' : 'bg-gray-300'
+              index === current ? 'bg-accent' : 'bg-gray-400'
             }`}
           />
         ))}

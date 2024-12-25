@@ -14,15 +14,16 @@ const Header = () => {
     { name: 'Monitor', href: '/monitor' },
     { name: 'About', href: '/about' },
     { name: 'Contact', href: '/contact' },
+    { name: 'Admin', href: '/admin/login' },
   ];
 
   return (
-    <header className="bg-white shadow">
+    <header className="bg-primary shadow">
       <nav className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8" aria-label="Top">
         <div className="flex h-16 items-center justify-between">
           <div className="flex items-center">
             <Link href="/" className="flex items-center">
-              <span className="text-xl font-bold text-gray-900">
+              <span className="text-xl font-bold text-white">
                 Landslide Detection
               </span>
             </Link>
@@ -36,14 +37,14 @@ const Header = () => {
                 href={item.href}
                 className={`${
                   pathname === item.href
-                    ? 'border-b-2 border-blue-500'
-                    : 'hover:border-b-2 hover:border-gray-300'
+                    ? 'border-b-2 border-secondary text-white'
+                    : 'hover:border-b-2 hover:border-gray-300 text-white'
                 } px-3 py-2 text-sm font-medium`}
               >
                 {item.name}
               </Link>
             ))}
-            <Button variant="primary" size="sm">
+            <Button variant="secondary" size="sm">
               Emergency Contact
             </Button>
           </div>
@@ -52,7 +53,7 @@ const Header = () => {
           <div className="flex md:hidden">
             <button
               type="button"
-              className="text-gray-400 hover:text-gray-500"
+              className="text-white hover:text-gray-300"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             >
               <span className="sr-only">Open main menu</span>
@@ -79,8 +80,8 @@ const Header = () => {
                   href={item.href}
                   className={`${
                     pathname === item.href
-                      ? 'bg-gray-50 text-blue-600'
-                      : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'
+                      ? 'bg-gray-50 text-primary'
+                      : 'text-gray-500 hover:bg-gray-50 hover:text-primary'
                   } block rounded-md px-3 py-2 text-base font-medium transition-colors`}
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
@@ -88,7 +89,7 @@ const Header = () => {
                 </Link>
               ))}
               <div className="mt-4">
-                <Button variant="primary" size="sm" className="w-full">
+                <Button variant="secondary" size="sm" className="w-full">
                   Emergency Contact
                 </Button>
               </div>
