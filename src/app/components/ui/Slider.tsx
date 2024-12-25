@@ -1,21 +1,20 @@
-// src/app/components/ui/Slider.tsx
 'use client';
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 
 const slides = [
   {
-    image: '/slide1.jpg',
+    image: '/satlodat.jpg',
     title: 'Advanced Detection Systems',
     description: 'State-of-the-art sensors for early warning'
   },
   {
-    image: '/slide2.jpg',
+    image: '/satlodat2.png',
     title: 'Real-time Monitoring',
     description: '24/7 surveillance of high-risk areas'
   },
   {
-    image: '/slide3.jpg',
+    image: '/satlodat3.jpeg',
     title: 'Data Analytics',
     description: 'Powerful insights for prevention'
   }
@@ -32,7 +31,7 @@ const Slider = () => {
   }, []);
 
   return (
-    <div className="relative h-[600px] w-full overflow-hidden rounded-xl">
+    <div className="relative h-[600px] w-full overflow-hidden rounded-xl shadow-lg">
       {slides.map((slide, index) => (
         <div
           key={index}
@@ -53,6 +52,16 @@ const Slider = () => {
           </div>
         </div>
       ))}
+      <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
+        {slides.map((_, index) => (
+          <div
+            key={index}
+            className={`w-3 h-3 rounded-full transition-colors duration-300 ${
+              index === current ? 'bg-primary' : 'bg-gray-300'
+            }`}
+          />
+        ))}
+      </div>
     </div>
   );
 };
