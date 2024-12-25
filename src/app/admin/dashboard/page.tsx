@@ -1,14 +1,96 @@
 'use client';
 import { useState, useEffect } from 'react';
 import StatsCard from '@/app/components/admin/StatsCard';
+import ChartComponent from '@/app/components/admin/ChartComponent';
+import { initializeApp } from 'firebase/app';
+import { getDatabase, ref, onValue } from 'firebase/database';
+
+const firebaseConfig = {                                                    
+  apiKey: "AIzaSyBeNKymDI7abdj6Hj6YVHWqPU4QoIA8Kac",
+  authDomain: "landslide-7cf2a.firebaseapp.com",
+  databaseURL: "https://landslide-7cf2a-default-rtdb.firebaseio.com",
+  projectId: "landslide-7cf2a",
+  storageBucket: "landslide-7cf2a.firebasestorage.app",
+  messagingSenderId: "939694240101",
+  appId: "1:939694240101:web:c2ba7a13b43f59a0f9718c",
+  measurementId: "G-F5PSQDXDTC"
+};
+
+const app = initializeApp(firebaseConfig);
+const database = getDatabase(app);
+
+interface SensorData {
+  latitude: number;
+  longitude: number;
+  rain: number;
+  soilMoisture: number;
+  temperature: number;
+  risk: number;
+  timestamp: string;
+  sensorId: number;
+}
 
 export default function AdminDashboard() {
   const [stats, setStats] = useState({
-    totalSensors: '24',
-    activeAlerts: '3',
-    avgRisk: '45%',
-    dataPoints: '1,234'
+    totalSensors: '0',
+    activeAlerts: '0',
+    avgRisk: '0%',
+    dataPoints: '0'
   });
+
+  const [chartData, setChartData] = useState<SensorData[]>([]);
+
+  useEffect(() => {
+    const dataRef = ref(database, `sensor_data/2024-11-28`);
+
+    onValue(dataRef, (snapshot) => {
+      const value = snapshot.val();
+      if (!value) return;
+
+      const fetchedData: SensorData[] = [];
+      let totalRisk = 0;
+      let alertCount = 0;
+
+      // Iterate through timestamps
+      Object.keys(value).forEach(timestampKey => {
+        const sensorData = value[timestampKey];
+
+        // Iterate through sensors
+        Object.keys(sensorData).forEach(sensorKey => {
+          const sensor = sensorData[sensorKey];
+          
+          // Create a proper timestamp string
+          const formattedTimestamp = new Date(parseInt(timestampKey) * 1000).toISOString();
+          
+          const dataPoint = {
+            sensorId: Number(sensorKey.split(' ')[1]), // Extract number from "sensor X"
+            latitude: sensor.latitude,
+            longitude: sensor.longitude,
+            rain: sensor.rain,
+            soilMoisture: sensor.soilMoisture,
+            temperature: sensor.temperature,
+            risk: sensor.risk,
+            timestamp: formattedTimestamp // Use the timestamp from the data structure
+          };
+
+          fetchedData.push(dataPoint);
+          totalRisk += sensor.risk;
+          if (sensor.risk > 70) alertCount++;
+        });
+      });
+
+      const avgRisk = (totalRisk / fetchedData.length).toFixed(2);
+
+      setStats({
+        totalSensors: new Intl.NumberFormat().format(fetchedData.length),
+        activeAlerts: new Intl.NumberFormat().format(alertCount),
+        avgRisk: `${avgRisk}%`,
+        dataPoints: new Intl.NumberFormat().format(fetchedData.length)
+      });
+
+      setChartData(fetchedData);
+    });
+  }, []);
 
   return (
     <div className="space-y-8">
@@ -51,11 +133,35 @@ export default function AdminDashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="bg-white p-6 rounded-lg shadow-sm">
           <h2 className="text-xl font-semibold mb-4">Risk Level Distribution</h2>
-          {/* Add your RiskGraph component here */}
+          <div className="h-[300px]">
+            <ChartComponent 
+              data={chartData.map(d => ({ date: new Date(d.timestamp), value: d.risk }))}
+              type="line"
+              height={300}
+            />
+          </div>
         </div>
+        
         <div className="bg-white p-6 rounded-lg shadow-sm">
-          <h2 className="text-xl font-semibold mb-4">Recent Activity</h2>
-          {/* Add activity list/table here */}
+          <h2 className="text-xl font-semibold mb-4">Risk Type Distribution</h2>
+          <div className="h-[300px]">
+            <ChartComponent 
+              data={chartData.map(d => ({ date: new Date(d.timestamp), value: d.risk }))}
+              type="pie"
+              height={300}
+            />
+          </div>
+        </div>
+      </div>
+
+      <div className="bg-white p-6 rounded-lg shadow-sm">
+        <h2 className="text-xl font-semibold mb-4">Monthly Risk Trends</h2>
+        <div className="h-[300px]">
+          <ChartComponent 
+            data={chartData.map(d => ({ date: new Date(d.timestamp), value: d.risk }))}
+            type="bar"
+            height={300}
+          />
         </div>
       </div>
     </div>
