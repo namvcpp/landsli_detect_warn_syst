@@ -137,7 +137,7 @@ export default function AdminDashboard() {
         </div>
         
         <div className="bg-white p-6 rounded-lg shadow-sm">
-          <h2 className="text-xl font-semibold mb-4">Monthly Risk Trends</h2>
+          <h2 className="text-xl font-semibold mb-4">Daily Risk Trends</h2>
           <div className="h-[300px]">
             <ChartComponent 
               data={chartData.map(d => ({ date: new Date(d.timestamp), value: d.risk }))}

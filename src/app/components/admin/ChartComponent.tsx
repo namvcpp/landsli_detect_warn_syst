@@ -15,7 +15,7 @@ interface ChartProps {
   colorScale?: (d: DataPoint) => string;
 }
 
-const ChartComponent = ({ data, type, height = 300, width = 600, colorScale }: ChartProps) => {
+const ChartComponent = ({ data, type, height = 600, width = 800, colorScale }: ChartProps) => { // Increased height
   const svgRef = useRef<SVGSVGElement | null>(null);
 
   useEffect(() => {
@@ -93,55 +93,135 @@ const ChartComponent = ({ data, type, height = 300, width = 600, colorScale }: C
         .call(d3.axisLeft(yScale));
 
     } else if (type === 'pie') {
-      const threshold = 5; // Threshold percentage for grouping small slices
+      const margin = { top: 80, right: 160, bottom: 80, left: 80 }; // Reduced margins
+      const radius = Math.min(width - margin.left - margin.right, height - margin.top - margin.bottom) / 1.3; // Larger pie
+      const labelRadius = radius * 1.2;
+  
+      const g = svg.append('g')
+        .attr('transform', `translate(${width/2},${height/2})`);
+
+      const topN = 6; // Show top N values
+      const threshold = 1; // Lower threshold to 1%
       const totalValue = d3.sum(data, d => d.value);
-      const groupedData = data.reduce((acc, d) => {
-        const percentage = (d.value / totalValue) * 100;
-        if (percentage < threshold) {
-          acc['Others'] = (acc['Others'] || 0) + d.value;
-        } else {
-          acc[d.value] = (acc[d.value] || 0) + d.value;
-        }
+      
+      // First, create frequency map
+      const valueMap = data.reduce((acc, d) => {
+        acc[d.value] = (acc[d.value] || 0) + 1;
         return acc;
-      }, {} as Record<string, number>);
+      }, {} as Record<number, number>);
 
-      const pieData = Object.entries(groupedData).map(([key, value]) => ({
-        value: key === 'Others' ? 'Others' : Number(key),
-        count: value
-      }));
+      // Convert to array and sort by frequency
+      const sortedValues = Object.entries(valueMap)
+        .map(([value, count]) => ({
+          value: Number(value),
+          count: count,
+          percentage: (count / data.length) * 100
+        }))
+        .sort((a, b) => b.count - a.count);
 
-      // Sort the pieData by value for better coloring
-      pieData.sort((a, b) => (a.value === 'Others' ? -1 : b.value === 'Others' ? 1 : a.value - b.value));
+      // Take top N values and group the rest as "Others"
+      const pieData = sortedValues.slice(0, topN);
+      if (sortedValues.length > topN) {
+        const othersCount = sortedValues
+          .slice(topN)
+          .reduce((sum, item) => sum + item.count, 0);
+        if (othersCount > 0) {
+          pieData.push({
+            value: 'Others',
+            count: othersCount,
+            percentage: (othersCount / data.length) * 100
+          });
+        }
+      }
 
-      const pie = d3.pie<{ value: number | string, count: number }>().value(d => d.count);
-      const arc = d3.arc<d3.PieArcDatum<{ value: number | string, count: number }>>().innerRadius(0).outerRadius(Math.min(width, height) / 2);
+      const pie = d3.pie<{ value: number | string, count: number, percentage: number }>()
+        .value(d => d.count);
+
+      const arc = d3.arc<d3.PieArcDatum<{ value: number | string, count: number, percentage: number }>>()
+        .innerRadius(0)
+        .outerRadius(radius);
+
+      // Calculate label position
+      const labelArc = d3.arc<d3.PieArcDatum<{ value: number | string, count: number, percentage: number }>>()
+        .innerRadius(labelRadius)
+        .outerRadius(labelRadius);
 
       const arcs = g.selectAll('arc')
         .data(pie(pieData))
         .enter()
         .append('g')
-        .attr('transform', `translate(${innerWidth / 2},${innerHeight / 2})`);
+        .attr('class', 'arc'); // Remove transform as parent group is already centered
 
+      // Add pie slices
       arcs.append('path')
         .attr('fill', d => color(typeof d.data.value === 'number' ? d.data.value : 0))
         .attr('d', arc);
 
-      arcs.append('text')
-        .attr('transform', d => `translate(${arc.centroid(d)})`)
-        .attr('text-anchor', 'middle')
-        .attr('dy', '0.35em')
-        .style('font-size', '14px')
-        .style('font-weight', 'bold')
-        .style('fill', d => getTextColor(color(typeof d.data.value === 'number' ? d.data.value : 0)))
-        .text(d => `${d.data.value}`);
+      // Create labels group after pie slices to ensure they're on top
+      const labelsGroup = g.append('g').attr('class', 'labels');
 
-      // Add legend
+      // Group slices by left/right side
+      const leftSlices = [];
+      const rightSlices = [];
+      
+      arcs.each(function(d) {
+        const midAngle = d.startAngle + (d.endAngle - d.startAngle) / 2;
+        if (midAngle < Math.PI) {
+          rightSlices.push({ d, midAngle });
+        } else {
+          leftSlices.push({ d, midAngle });
+        }
+      });
+
+      // Sort by vertical position
+      leftSlices.sort((a, b) => a.midAngle - b.midAngle);
+      rightSlices.sort((a, b) => a.midAngle - b.midAngle);
+
+      // Position labels with spacing
+      const positionLabels = (slices: any[], isRight: boolean) => {
+        const spacing = height / (slices.length + 1);
+        slices.forEach((slice, i) => {
+          const { d } = slice;
+          const percentage = (d.endAngle - d.startAngle) / (2 * Math.PI) * 100;
+          
+          if (percentage < 12) {
+            const y = -height/2 + spacing * (i + 1);
+            const x = (isRight ? 1 : -1) * (radius + 50);
+            
+            labelsGroup.append('polyline')
+              .attr('stroke', '#666')
+              .attr('fill', 'none')
+              .attr('points', () => {
+                const centroid = arc.centroid(d);
+                const mid = [x * 0.6, y];
+                return `${centroid},${mid},${x},${y}`;
+              });
+
+            labelsGroup.append('text')
+              .attr('x', x)
+              .attr('y', y)
+              .attr('dy', '0.35em')
+              .attr('text-anchor', isRight ? 'start' : 'end')
+              .text(`${d.data.value} (${d.data.percentage.toFixed(1)}%)`);
+          } else {
+            labelsGroup.append('text')
+              .attr('transform', `translate(${arc.centroid(d)})`)
+              .attr('text-anchor', 'middle')
+              .text(`${d.data.value} (${d.data.percentage.toFixed(1)}%)`);
+          }
+        });
+      };
+
+      positionLabels(leftSlices, false);
+      positionLabels(rightSlices, true);
+
+      // Add legend with adjusted positioning
       const legend = svg.append('g')
-        .attr('transform', `translate(${innerWidth + margin.right}, ${margin.top})`);
+        .attr('transform', `translate(${width - margin.right + 20}, ${margin.top})`); // Move legend inside frame
 
       pieData.forEach((d, i) => {
         const legendRow = legend.append('g')
-          .attr('transform', `translate(0, ${i * 20})`);
+          .attr('transform', `translate(0, ${i * 25})`); // Increased spacing between legend items
 
         legendRow.append('rect')
           .attr('width', 10)
@@ -153,7 +233,8 @@ const ChartComponent = ({ data, type, height = 300, width = 600, colorScale }: C
           .attr('y', 10)
           .attr('text-anchor', 'start')
           .style('font-size', '12px')
-          .text(`${d.value} (${d.count})`);
+          .style('fill', 'black')
+          .text(`${d.value} (${d.percentage.toFixed(1)}%)`);
       });
     }
   }, [data, type, height, width, colorScale]);
