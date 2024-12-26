@@ -1,6 +1,5 @@
 'use client';
 import { useState, useEffect } from 'react';
-import StatsCard from '@/app/components/admin/StatsCard';
 import ChartComponent from '@/app/components/admin/ChartComponent';
 import { initializeApp } from 'firebase/app';
 import { getDatabase, ref, onValue } from 'firebase/database';
@@ -33,7 +32,7 @@ interface SensorData {
 export default function AdminDashboard() {
   const [stats, setStats] = useState({
     totalSensors: '0',
-    activeAlerts: '0',
+    highRiskSensors: '0',
     avgRisk: '0%',
     dataPoints: '0'
   });
@@ -41,15 +40,16 @@ export default function AdminDashboard() {
   const [chartData, setChartData] = useState<SensorData[]>([]);
 
   useEffect(() => {
-    const dataRef = ref(database, `sensor_data/2024-11-28`);
+    const dataRef = ref(database, `sensor_data/2024-12-08`);
 
     onValue(dataRef, (snapshot) => {
       const value = snapshot.val();
       if (!value) return;
 
       const fetchedData: SensorData[] = [];
+      const uniqueSensors = new Set<number>();
       let totalRisk = 0;
-      let alertCount = 0;
+      let highRiskCount = 0;
 
       // Iterate through timestamps
       Object.keys(value).forEach(timestampKey => {
@@ -74,16 +74,17 @@ export default function AdminDashboard() {
           };
 
           fetchedData.push(dataPoint);
+          uniqueSensors.add(dataPoint.sensorId);
           totalRisk += sensor.risk;
-          if (sensor.risk > 70) alertCount++;
+          if (sensor.risk > 70) highRiskCount++;
         });
       });
 
       const avgRisk = (totalRisk / fetchedData.length).toFixed(2);
 
       setStats({
-        totalSensors: new Intl.NumberFormat().format(fetchedData.length),
-        activeAlerts: new Intl.NumberFormat().format(alertCount),
+        totalSensors: new Intl.NumberFormat().format(uniqueSensors.size),
+        highRiskSensors: new Intl.NumberFormat().format(highRiskCount),
         avgRisk: `${avgRisk}%`,
         dataPoints: new Intl.NumberFormat().format(fetchedData.length)
       });
@@ -104,30 +105,22 @@ export default function AdminDashboard() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <StatsCard 
-          title="Total Sensors"
-          value={stats.totalSensors}
-          trend="up"
-          icon="📡"
-        />
-        <StatsCard 
-          title="Active Alerts"
-          value={stats.activeAlerts}
-          trend="down"
-          icon="⚠️"
-        />
-        <StatsCard 
-          title="Average Risk"
-          value={stats.avgRisk}
-          trend="up"
-          icon="📊"
-        />
-        <StatsCard 
-          title="Data Points"
-          value={stats.dataPoints}
-          trend="up"
-          icon="📈"
-        />
+        <div className="bg-white p-6 rounded-lg shadow-sm">
+          <h2 className="text-xl font-semibold mb-4">Total Sensors</h2>
+          <p className="text-3xl font-bold">{stats.totalSensors}</p>
+        </div>
+        <div className="bg-white p-6 rounded-lg shadow-sm">
+          <h2 className="text-xl font-semibold mb-4">High Risk Sensors</h2>
+          <p className="text-3xl font-bold">{stats.highRiskSensors}</p>
+        </div>
+        <div className="bg-white p-6 rounded-lg shadow-sm">
+          <h2 className="text-xl font-semibold mb-4">Average Risk</h2>
+          <p className="text-3xl font-bold">{stats.avgRisk}</p>
+        </div>
+        <div className="bg-white p-6 rounded-lg shadow-sm">
+          <h2 className="text-xl font-semibold mb-4">Data Points</h2>
+          <p className="text-3xl font-bold">{stats.dataPoints}</p>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -136,32 +129,22 @@ export default function AdminDashboard() {
           <div className="h-[300px]">
             <ChartComponent 
               data={chartData.map(d => ({ date: new Date(d.timestamp), value: d.risk }))}
-              type="line"
+              type="pie"
               height={300}
+              colorScale={d => d.value > 50 ? 'red' : 'green'}
             />
           </div>
         </div>
         
         <div className="bg-white p-6 rounded-lg shadow-sm">
-          <h2 className="text-xl font-semibold mb-4">Risk Type Distribution</h2>
+          <h2 className="text-xl font-semibold mb-4">Monthly Risk Trends</h2>
           <div className="h-[300px]">
             <ChartComponent 
               data={chartData.map(d => ({ date: new Date(d.timestamp), value: d.risk }))}
-              type="pie"
+              type="bar"
               height={300}
             />
           </div>
-        </div>
-      </div>
-
-      <div className="bg-white p-6 rounded-lg shadow-sm">
-        <h2 className="text-xl font-semibold mb-4">Monthly Risk Trends</h2>
-        <div className="h-[300px]">
-          <ChartComponent 
-            data={chartData.map(d => ({ date: new Date(d.timestamp), value: d.risk }))}
-            type="bar"
-            height={300}
-          />
         </div>
       </div>
     </div>
