@@ -14,13 +14,13 @@ export default function HomePage() {
       </section>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <div className="relative h-64 w-full">
-          <Image src="/images/satlodat.jpg" alt="Advanced Detection Systems" layout="fill" objectFit="cover" />
+          <Image src="/images/satlodat1.jpg" alt="Advanced Detection Systems" layout="fill" objectFit="cover" />
         </div>
         <div className="relative h-64 w-full">
-          <Image src="/images/satlodat2.jpg" alt="Real-time Monitoring" layout="fill" objectFit="cover" />
+          <Image src="/images/satlodat2.png" alt="Real-time Monitoring" layout="fill" objectFit="cover" />
         </div>
         <div className="relative h-64 w-full">
-          <Image src="/images/satlodat3.jpg" alt="Data Analytics" layout="fill" objectFit="cover" />
+          <Image src="/images/satlodat3.jpeg" alt="Data Analytics" layout="fill" objectFit="cover" />
         </div>
       </div>
       <section className="px-4 py-8 bg-secondary text-white rounded-lg shadow-lg">

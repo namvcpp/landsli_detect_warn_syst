@@ -4,17 +4,17 @@ import Image from 'next/image';
 
 const slides = [
   {
-    image: '/satlodat.jpg',
+    image: '/images/satlodat1.jpg',
     title: 'Advanced Detection Systems',
     description: 'State-of-the-art sensors for early warning'
   },
   {
-    image: '/satlodat2.png',
+    image: '/images/satlodat2.png',
     title: 'Real-time Monitoring',
     description: '24/7 surveillance of high-risk areas'
   },
   {
-    image: '/satlodat3.jpeg',
+    image: '/images/satlodat3.jpeg',
     title: 'Data Analytics',
     description: 'Powerful insights for prevention'
   }
