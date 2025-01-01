@@ -1,9 +1,15 @@
 'use client';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 
 const AdminSidebar = () => {
   const pathname = usePathname();
+  const router = useRouter();
+
+  const handleLogout = () => {
+    localStorage.removeItem('isAdmin');
+    router.push('/admin/login');
+  };
 
   const menuItems = [
     { name: 'Dashboard', path: '/admin/dashboard', icon: '📊' },
@@ -14,7 +20,7 @@ const AdminSidebar = () => {
   ];
 
   return (
-    <aside className="w-64 bg-white h-screen shadow-lg fixed left-0 top-0">
+    <aside className="w-64 bg-white h-full shadow-lg">
       <div className="flex flex-col h-full">
         <div className="p-6 border-b">
           <h1 className="text-xl font-bold text-gray-800">Admin Panel</h1>
@@ -27,7 +33,7 @@ const AdminSidebar = () => {
                 <Link
                   href={item.path}
                   className={`flex items-center p-3 text-gray-700 rounded-lg hover:bg-blue-50 transition-colors
-                    ${pathname === item.path ? 'bg-blue-50 text-blue-700' : ''}`}
+                    ${pathname === item.path ? 'bg-blue-50 text-blue-700 font-medium' : ''}`}
                 >
                   <span className="mr-3">{item.icon}</span>
                   <span>{item.name}</span>
@@ -38,7 +44,10 @@ const AdminSidebar = () => {
         </nav>
 
         <div className="p-4 border-t">
-          <button className="flex items-center w-full p-3 text-gray-700 rounded-lg hover:bg-red-50 transition-colors">
+          <button 
+            onClick={handleLogout}
+            className="flex items-center w-full p-3 text-gray-700 rounded-lg hover:bg-red-50 transition-colors"
+          >
             <span className="mr-3">🚪</span>
             <span>Logout</span>
           </button>
