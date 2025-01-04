@@ -129,7 +129,7 @@ export default function AdminDashboard() {
             onChange={(e) => {
               const sensorId = e.target.value;
               if (sensorId) {
-                window.location.href = `/admin/dashboard/sensor${sensorId}`;
+                window.location.href = `/admin/dashboard/sensor_${sensorId}`;
               }
             }}
           >
