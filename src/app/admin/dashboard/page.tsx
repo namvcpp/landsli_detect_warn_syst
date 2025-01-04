@@ -39,85 +39,84 @@ export default function AdminDashboard() {
   });
 
   const [chartData, setChartData] = useState<SensorData[]>([]);
-  const [sensorStatus, setSensorStatus] = useState<{ [key: number]: string }>({});
 
   useEffect(() => {
     const currentDate = new Date();
     const formattedDate = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(currentDate.getDate()).padStart(2, '0')}`;
     const dataRef = ref(database, `sensor_data/${formattedDate}`);
+    // alert(formattedDate)
     // const dataRef = ref(database, `sensor_data/2024-12-08`);
-    let maxTimestamp = 0;
-    onValue(dataRef, (snapshot) => {
-          const value = snapshot.val();
-          if (!value) return;
-    
-          const fetchedData: SensorData[] = [];
-          const uniqueSensors = new Set<number>();
-          let totalRisk = 0;
-          let highRiskCount = 0;
-          
-          setSensorStatus(status);
-    
-          // Iterate through timestamps
-          Object.keys(value).forEach(timestampKey => {
-            const sensorData = value[timestampKey];
-            const timestamp = parseInt(timestampKey);
-            if (timestamp > maxTimestamp) {
-              maxTimestamp = timestamp;
-            }
-    
-            // Iterate through sensors
-            Object.keys(sensorData).forEach(sensorKey => {
-              const sensor = sensorData[sensorKey];
-              
-              // Create a proper timestamp string
-              const formattedTimestamp = new Date(parseInt(timestampKey) * 1000).toISOString();
-              
-              const dataPoint = {
-                sensorId: Number(sensorKey.split(' ')[1]), // Extract number from "sensor X"
-                latitude: sensor.latitude,
-                longitude: sensor.longitude,
-                rain: sensor.rain,
-                soilMoisture: sensor.soilMoisture,
-                temperature: sensor.temperature,
-                risk: sensor.risk,
-                timestamp: formattedTimestamp // Use the timestamp from the data structure
-              };
-    
-              fetchedData.push(dataPoint);
-              uniqueSensors.add(dataPoint.sensorId);
-              totalRisk += sensor.risk;
-              if (sensor.risk > 70) highRiskCount++;
-            });
-          });
-    
-          const avgRisk = fetchedData.length > 0 ? (totalRisk / fetchedData.length).toFixed(2) : '0.00';
-          const latestTimestamp = maxTimestamp;
-          const currentTimestamp = Math.floor(Date.now() / 1000);
-          const loraStatus = (currentTimestamp - latestTimestamp) < 150 ? 'OK' : 'ERROR';
-          setStats({
-            totalSensors: new Intl.NumberFormat().format(uniqueSensors.size),
-            highRiskSensors: new Intl.NumberFormat().format(highRiskCount),
-            avgRisk: `${avgRisk}%`,
-            dataPoints: new Intl.NumberFormat().format(fetchedData.length),
-            loraStatus: loraStatus
-          });
-    
-          setChartData(fetchedData);
-          console.log("Max Timestamp:", maxTimestamp);
-        });
-        const intervalId = setInterval(() => {
-          const currentTimestamp = Math.floor(Date.now() / 1000);
-          const loraStatus = (currentTimestamp - maxTimestamp) < 60 ? 'OK' : 'ERROR';
-          setStats(prevStats => ({
-            ...prevStats,
-            loraStatus: loraStatus
-          }));
-        }, 2000); // Update every 2 seconds
-    
-        return () => clearInterval(intervalId);
-  }, []);
 
+    let maxTimestamp = 0;
+
+    onValue(dataRef, (snapshot) => {
+      const value = snapshot.val();
+      if (!value) return;
+
+      const fetchedData: SensorData[] = [];
+      const uniqueSensors = new Set<number>();
+      let totalRisk = 0;
+      let highRiskCount = 0;
+
+      // Iterate through timestamps
+      Object.keys(value).forEach(timestampKey => {
+        const sensorData = value[timestampKey];
+        const timestamp = parseInt(timestampKey);
+        if (timestamp > maxTimestamp) {
+          maxTimestamp = timestamp;
+        }
+
+        // Iterate through sensors
+        Object.keys(sensorData).forEach(sensorKey => {
+          const sensor = sensorData[sensorKey];
+          
+          // Create a proper timestamp string
+          const formattedTimestamp = new Date(parseInt(timestampKey) * 1000).toISOString();
+          
+          const dataPoint = {
+            sensorId: Number(sensorKey.split(' ')[1]), // Extract number from "sensor X"
+            latitude: sensor.latitude,
+            longitude: sensor.longitude,
+            rain: sensor.rain,
+            soilMoisture: sensor.soilMoisture,
+            temperature: sensor.temperature,
+            risk: sensor.risk,
+            timestamp: formattedTimestamp // Use the timestamp from the data structure
+          };
+
+          fetchedData.push(dataPoint);
+          uniqueSensors.add(dataPoint.sensorId);
+          totalRisk += sensor.risk;
+          if (sensor.risk > 70) highRiskCount++;
+        });
+      });
+
+      const avgRisk = fetchedData.length > 0 ? (totalRisk / fetchedData.length).toFixed(2) : '0.00';
+      const latestTimestamp = maxTimestamp;
+      const currentTimestamp = Math.floor(Date.now() / 1000);
+      const loraStatus = (currentTimestamp - latestTimestamp) < 150 ? 'OK' : 'ERROR';
+      setStats({
+        totalSensors: new Intl.NumberFormat().format(uniqueSensors.size),
+        highRiskSensors: new Intl.NumberFormat().format(highRiskCount),
+        avgRisk: `${avgRisk}%`,
+        dataPoints: new Intl.NumberFormat().format(fetchedData.length),
+        loraStatus: loraStatus
+      });
+      setChartData(fetchedData);
+      console.log("Max Timestamp:", maxTimestamp);
+    });
+    const intervalId = setInterval(() => {
+      const currentTimestamp = Math.floor(Date.now() / 1000);
+      const loraStatus = (currentTimestamp - maxTimestamp) < 60 ? 'OK' : 'ERROR';
+      setStats(prevStats => ({
+        ...prevStats,
+        loraStatus: loraStatus
+      }));
+    }, 2000); // Update every 2 seconds
+
+    return () => clearInterval(intervalId);
+  }, []);
+  
   const allowedSensors = [1, 2]; // Example allowed sensor IDs
   return (
     <div className="space-y-8">
@@ -164,7 +163,7 @@ export default function AdminDashboard() {
           <p className="text-3xl font-bold">{stats.dataPoints}</p>
         </div>
       </div>
-      
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="bg-white p-6 rounded-lg shadow-sm">
           <h2 className="text-xl font-semibold mb-4">Risk Level Distribution</h2>
@@ -177,44 +176,18 @@ export default function AdminDashboard() {
             />
           </div>
         </div>
+        
         <div className="bg-white p-6 rounded-lg shadow-sm">
-          <h2 className="text-xl font-semibold mb-4">Sensor Status</h2>
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-          <tr className="bg-gray-50">
-            <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Sensor ID</th>
-            <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Status</th>
-          </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200">
-          {allowedSensors.map(sensorId => {
-            const isActive = stats.loraStatus === 'OK' && 
-               chartData.length > 0 && 
-               chartData[chartData.length - 1].rain !== -1 && 
-               chartData[chartData.length - 1].soilMoisture !== -1 && 
-               chartData[chartData.length - 1].temperature !== -1 && 
-               sensorId === 1;
-            
-            return (
-              <tr key={sensorId} className="hover:bg-gray-50">
-                <td className="px-6 py-4 text-sm text-gray-700">Sensor {sensorId}</td>
-                <td className="px-6 py-4">
-            <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium
-              ${isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-              {isActive ? 'Active' : 'Inactive'}
-            </span>
-                </td>
-              </tr>
-            );
-          })}
-              </tbody>
-            </table>
+          <h2 className="text-xl font-semibold mb-4">Daily Risk Trends</h2>
+          <div className="h-[300px]">
+            <ChartComponent 
+              data={chartData.map(d => ({ sensorId: d.sensorId, date: new Date(d.timestamp), value: d.risk }))}
+              type="bar"
+              height={300}
+            />
           </div>
         </div>
       </div>
-      
-        
     </div>
   );
 }
