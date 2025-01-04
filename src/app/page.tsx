@@ -1,6 +1,6 @@
 // src/app/(routes)/page.tsx
 import Slider from './components/ui/Slider';
-import Image from 'next/image';
+import Image from "next/legacy/image";
 
 export default function HomePage() {
   return (

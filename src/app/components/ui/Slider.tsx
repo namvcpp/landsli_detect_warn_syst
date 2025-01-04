@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
-import Image from 'next/image';
+import Image from "next/legacy/image";
 
 const slides = [
   {
@@ -41,7 +41,7 @@ const Slider = () => {
           <Image
             src={slide.image}
             alt={slide.title}
-            fill
+            layout="fill"
             className="object-cover"
           />
           <div className="absolute inset-0 bg-black/50 flex items-center justify-center text-white">
