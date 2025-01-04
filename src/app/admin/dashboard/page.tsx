@@ -178,28 +178,40 @@ export default function AdminDashboard() {
           </div>
         </div>
         <div className="bg-white p-6 rounded-lg shadow-sm">
-          <div>
-            <h1>Admin Dashboard</h1>
-            <table className="min-w-full bg-white">
+          <h2 className="text-xl font-semibold mb-4">Sensor Status</h2>
+          <div className="overflow-x-auto">
+            <table className="w-full">
               <thead>
-                <tr>
-                  <th>Sensor ID</th>
-                  <th>Status</th>
-                </tr>
+          <tr className="bg-gray-50">
+            <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Sensor ID</th>
+            <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Status</th>
+          </tr>
               </thead>
-              <tbody>
-                {allowedSensors.map(sensorId => (
-                  <tr key={sensorId}>
-                    <td className="py-2 px-4 border-b">sensor {sensorId}</td>
-                    <td className={`py-2 px-4 border-b ${stats.loraStatus === 'OK' && chartData.length > 0 && chartData[chartData.length - 1].rain !== -1 && chartData[chartData.length - 1].soilMoisture !== -1 && chartData[chartData.length - 1].temperature !== -1 && sensorId === 1 ? 'text-green-600' : 'text-red-600'}`}>
-                        {stats.loraStatus === 'OK' && chartData.length > 0 && chartData[chartData.length - 1].rain !== -1 && chartData[chartData.length - 1].soilMoisture !== -1 && chartData[chartData.length - 1].temperature !== -1 && sensorId === 1 ? 'OK' : 'ERROR'}
-                    </td>
-                  </tr>
-                ))}
+              <tbody className="divide-y divide-gray-200">
+          {allowedSensors.map(sensorId => {
+            const isActive = stats.loraStatus === 'OK' && 
+               chartData.length > 0 && 
+               chartData[chartData.length - 1].rain !== -1 && 
+               chartData[chartData.length - 1].soilMoisture !== -1 && 
+               chartData[chartData.length - 1].temperature !== -1 && 
+               sensorId === 1;
+            
+            return (
+              <tr key={sensorId} className="hover:bg-gray-50">
+                <td className="px-6 py-4 text-sm text-gray-700">Sensor {sensorId}</td>
+                <td className="px-6 py-4">
+            <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium
+              ${isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+              {isActive ? 'Active' : 'Inactive'}
+            </span>
+                </td>
+              </tr>
+            );
+          })}
               </tbody>
             </table>
-          </div>      
-        </div> 
+          </div>
+        </div>
       </div>
       
         
