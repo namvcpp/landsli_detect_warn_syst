@@ -1,8 +1,9 @@
 'use client';
-import { useEffect, useRef } from 'react';
+import React, { useRef, useEffect } from 'react';
 import * as d3 from 'd3';
 
 interface DataPoint {
+  sensorId: number;
   date: Date;
   value: number;
 }
@@ -12,10 +13,10 @@ interface ChartProps {
   type: 'line' | 'bar' | 'pie';
   height?: number;
   width?: number;
-  colorScale?: (d: DataPoint) => string;
+  colorScale: (d: { value: number }) => string;
 }
 
-const ChartComponent = ({ data, type, height = 600, width = 800, colorScale }: ChartProps) => { // Increased height
+const ChartComponent: React.FC<ChartProps> = ({ data, type, height = 600, width = 800, colorScale }: ChartProps) => {
   const svgRef = useRef<SVGSVGElement | null>(null);
 
   useEffect(() => {
